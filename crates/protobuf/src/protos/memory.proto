@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+
+// Query request packet.
+message Query {
+    /// Last seen metadata version.
+    uint64 version = 1;
+}
+
+// Label for one instrument.
+message Label {
+    // ident of the label.
+    string key = 1;
+    // label value.
+    string value = 2;
+}
+
+
+// Instrument type
+enum Instrument {
+    COUNTER = 0;
+    HISTOGRAM = 1;
+    GAUGE = 2;
+}
+
+// Metadata for one instrument.
+message Metadata {
+    uint64 hash = 1;
+    Instrument instrument = 2;
+    string name = 3;
+    repeated Label labels = 4;
+}
+
+
+// Hash-value pair.
+message Value {
+    uint64 hash = 1;
+    uint64 value = 2;
+}
+
+/// Query result.
+message QueryResult {
+    repeated Value values = 1;
+    repeated Metadata metadatas = 2;
+}
