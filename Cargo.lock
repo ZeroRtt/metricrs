@@ -344,7 +344,6 @@ dependencies = [
  "divan",
  "futures",
  "futures-test",
- "log",
  "metricrs-derive",
  "pretty_env_logger",
 ]
@@ -365,6 +364,7 @@ dependencies = [
  "log",
  "metricrs",
  "parking_lot",
+ "pretty_env_logger",
  "protobuf",
  "protobuf-codegen",
  "protoc-bin-vendored",

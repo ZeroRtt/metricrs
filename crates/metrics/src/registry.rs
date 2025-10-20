@@ -1,4 +1,7 @@
-use std::hash::{DefaultHasher, Hasher};
+use std::{
+    fmt::Debug,
+    hash::{DefaultHasher, Hasher},
+};
 
 /// `key` id to reference a Measuring instrument
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
@@ -138,7 +141,7 @@ impl Histogram {
 }
 
 /// Registry of measuring instruments must implement this trait.
-pub trait Registry: Send + Sync {
+pub trait Registry: Send + Sync + Debug {
     /// Register/Get measuring instrument `counter`.
     #[must_use = "This will cause unnecessary performance loss."]
     fn counter(&self, token: Token<'_>) -> Counter;

@@ -42,4 +42,5 @@ message Value {
 message QueryResult {
     repeated Value values = 1;
     repeated Metadata metadatas = 2;
+    uint64 version = 3;
 }

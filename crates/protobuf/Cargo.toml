@@ -10,8 +10,12 @@ version = "0.1.0"
 [dependencies]
 parking_lot = { version = "0.12.4" }
 protobuf = { version = "3.7.2"}
-metricrs = { path = "../metrics", version = "^0.1"}
+metricrs = { path = "../metrics", version = "^0.1", default-features = false }
 log = { version = "^0.4" }
+
+[dev-dependencies]
+metricrs = { path = "../metrics", version = "^0.1", features = ["derive"] }
+pretty_env_logger = "0.5.0"
 
 [build-dependencies]
 protobuf-codegen = "3.7.2"

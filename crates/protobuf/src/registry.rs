@@ -2,8 +2,9 @@
 
 use std::{
     collections::HashMap,
+    fmt::Debug,
     io::{Read, Result, Write as _},
-    net::{TcpListener, TcpStream, ToSocketAddrs},
+    net::{SocketAddr, TcpListener, TcpStream, ToSocketAddrs},
     sync::{
         Arc,
         atomic::{AtomicU64, Ordering},
@@ -94,12 +95,26 @@ struct MutableData {
 
 /// A builtin in-memory [`Registry`](crate::Registry) implementation works
 /// in tandem with the pull-mode data collector.
-#[derive(Default, Clone)]
-pub struct MemoryRegistry {
+#[derive(Clone)]
+pub struct ProtoBufRegistry {
+    local_addr: SocketAddr,
     mutable: Arc<RwLock<MutableData>>,
 }
 
-impl MemoryRegistry {
+impl Debug for ProtoBufRegistry {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ProtoBufRegistry")
+            .field("local_addr", &self.local_addr)
+            .finish_non_exhaustive()
+    }
+}
+
+impl ProtoBufRegistry {
+    /// Local bound listening address.
+    pub fn local_addr(&self) -> SocketAddr {
+        self.local_addr
+    }
+
     /// Create `MemoryRegistry` and start a `TCP` server to accept remote `status` queries.
     pub fn bind<S>(laddr: S) -> Result<Self>
     where
@@ -107,7 +122,10 @@ impl MemoryRegistry {
     {
         let listener = TcpListener::bind(laddr)?;
 
-        let registry = MemoryRegistry::default();
+        let registry = ProtoBufRegistry {
+            local_addr: listener.local_addr()?,
+            mutable: Default::default(),
+        };
 
         let server = registry.clone();
 
@@ -157,7 +175,9 @@ impl MemoryRegistry {
         let mut metadatas = vec![];
         let mut values = vec![];
 
-        if mutable.version > query.version {
+        let version = mutable.version;
+
+        if version > query.version {
             for metadata in mutable.metadata.values().clone() {
                 metadatas.push(metadata.clone());
             }
@@ -176,6 +196,7 @@ impl MemoryRegistry {
         let query_result = QueryResult {
             values,
             metadatas,
+            version,
             ..Default::default()
         };
 
@@ -210,7 +231,7 @@ impl MemoryRegistry {
     }
 }
 
-impl Registry for MemoryRegistry {
+impl Registry for ProtoBufRegistry {
     fn counter(&self, token: Token<'_>) -> Counter {
         Counter::Record(Box::new(Write(self.get(Instrument::COUNTER, token))))
     }
