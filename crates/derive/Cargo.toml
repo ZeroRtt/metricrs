@@ -5,7 +5,7 @@ edition = "2024"
 license = "MIT"
 name = "metricrs-derive"
 repository = "https://github.com/ZeroRtt/metricrs/crates/metrics/derive"
-version = "0.1.0"
+version.workspace = true
 
 [lib]
 proc-macro = true

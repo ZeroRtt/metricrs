@@ -5,7 +5,7 @@ edition = "2024"
 license = "MIT"
 name = "metricrs-protobuf"
 repository = "https://github.com/ZeroRtt/metricrs/crates/protobuf"
-version = "0.1.0"
+version.workspace = true
 
 [dependencies]
 parking_lot = { version = "0.12.4" }
@@ -16,6 +16,7 @@ log = { version = "^0.4" }
 [dev-dependencies]
 metricrs = { path = "../metrics", version = "^0.1", features = ["derive"] }
 pretty_env_logger = "0.5.0"
+divan = "0.1.21"
 
 [build-dependencies]
 protobuf-codegen = "3.7.2"
@@ -26,3 +27,8 @@ protoc-bin-vendored = "3.2.0"
 default = ["registry","fetch"]
 registry = []
 fetch = []
+
+
+[[bench]]
+name = "instrument"
+harness = false

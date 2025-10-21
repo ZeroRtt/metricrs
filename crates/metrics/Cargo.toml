@@ -5,7 +5,7 @@ edition = "2024"
 license = "MIT"
 name = "metricrs"
 repository = "https://github.com/ZeroRtt/metricrs/crates/metrics"
-version = "0.1.0"
+version.workspace = true
 
 
 [dependencies]
@@ -21,8 +21,3 @@ divan = "0.1.21"
 default = ["derive"]
 global = []
 derive = ["metricrs-derive","global"]
-
-
-[[bench]]
-name = "instrument"
-harness = false

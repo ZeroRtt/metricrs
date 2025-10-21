@@ -2,9 +2,11 @@ use std::time::Instant;
 
 use divan::bench;
 
-use metricrs::instrument;
+use metricrs::{global::set_global_registry, instrument};
+use metricrs_protobuf::registry::ProtoBufRegistry;
 
 fn main() {
+    set_global_registry(ProtoBufRegistry::bind("127.0.0.1:0").unwrap()).unwrap();
     divan::main();
 }
 
