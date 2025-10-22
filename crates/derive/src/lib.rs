@@ -165,9 +165,38 @@ pub fn instrument(options: TokenStream, item: TokenStream) -> TokenStream {
         }
     };
 
+    let make_gauge = || {
+        quote! {
+            #(#attrs)*
+            #vis #sig {
+
+                static GAUGE: std::sync::LazyLock<Option<metricrs::Gauge>> = std::sync::LazyLock::new(|| {
+                    metricrs::global::get_global_registry().map(|registry| {
+                        use metricrs::*;
+                        use DeriveKind::*;
+                        registry.gauge(DeriveOption {
+                              #(#fields,)*
+                            ..Default::default()
+                        }.into())
+                    })
+                });
+
+                if let Some(gauge) = GAUGE.as_ref() {
+                    gauge.increment(1f64);
+                    let r = #block;
+                    gauge.decrement(1f64);
+                    r
+                } else {
+                    #block
+                }
+            }
+        }
+    };
+
     if let Some(kind) = kind {
         match kind.to_token_stream().to_string().as_str() {
             "Timer" => return make_timer().into(),
+            "Gauge" => return make_gauge().into(),
             _ => return make_counter().into(),
         }
     }

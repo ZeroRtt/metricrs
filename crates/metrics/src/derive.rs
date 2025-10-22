@@ -8,6 +8,8 @@ pub enum DeriveKind {
     Counter,
     /// A `timer` measuring instrument.
     Timer,
+    /// A `gauge` measuring instrument.
+    Gauge,
 }
 
 /// Instrument options set directly by the user in `#[metricrs::instrument]`.

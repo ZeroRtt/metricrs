@@ -20,8 +20,14 @@ use metricrs::{
 
 use crate::protos::memory::{Instrument, Label, Metadata, Query, QueryResult, Value};
 
-#[allow(unused)]
 struct Write(Arc<AtomicU64>);
+
+impl Write {
+    #[inline]
+    fn new(value: Arc<AtomicU64>) -> Self {
+        Self(value)
+    }
+}
 
 #[allow(unused)]
 impl CounterWrite for Write {
@@ -183,15 +189,31 @@ impl ProtoBufRegistry {
             }
         }
 
+        let mut removed = vec![];
+
         for (hash, value) in mutable.instruments.iter() {
             values.push(Value {
                 hash: *hash,
                 value: value.load(Ordering::Relaxed),
                 ..Default::default()
             });
+
+            if Arc::strong_count(value) == 1 {
+                removed.push(*hash);
+                continue;
+            }
         }
 
         drop(mutable);
+
+        if !removed.is_empty() {
+            let mut mutable = self.mutable.write();
+
+            for removed in removed {
+                assert!(mutable.metadata.remove(&removed).is_some());
+                assert!(mutable.instruments.remove(&removed).is_some());
+            }
+        }
 
         let query_result = QueryResult {
             values,
@@ -233,14 +255,14 @@ impl ProtoBufRegistry {
 
 impl Registry for ProtoBufRegistry {
     fn counter(&self, token: Token<'_>) -> Counter {
-        Counter::Record(Box::new(Write(self.get(Instrument::COUNTER, token))))
+        Counter::Record(Box::new(Write::new(self.get(Instrument::COUNTER, token))))
     }
 
     fn gauge(&self, token: Token<'_>) -> Gauge {
-        Gauge::Record(Box::new(Write(self.get(Instrument::GAUGE, token))))
+        Gauge::Record(Box::new(Write::new(self.get(Instrument::GAUGE, token))))
     }
 
     fn histogam(&self, token: Token<'_>) -> Histogram {
-        Histogram::Record(Box::new(Write(self.get(Instrument::HISTOGRAM, token))))
+        Histogram::Record(Box::new(Write::new(self.get(Instrument::HISTOGRAM, token))))
     }
 }
